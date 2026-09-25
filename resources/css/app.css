@@ -1,0 +1,6 @@
+/* Limpio y exclusivo para el Panel de Administración */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Si necesitas algún estilo personalizado solo para el admin, lo pones aquí abajo */

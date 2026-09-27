@@ -56,7 +56,7 @@ return [
             'url' => env('CLOUDFLARE_R2_URL', env('AWS_URL')),
             'endpoint' => env('CLOUDFLARE_R2_ENDPOINT', env('AWS_ENDPOINT')),
             'use_path_style_endpoint' => env('CLOUDFLARE_R2_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', true)),
-            'throw' => false,
+            'throw' => true,
             'report' => false,
         ],
 

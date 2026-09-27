@@ -216,5 +216,15 @@ class Product extends Model
         return $this->hasManyThrough(Order::class, OrderItem::class);
     }
 
+    public function videos()
+    {
+        return $this->hasMany(ProductVideo::class);
+    }
+
+    public function pdfs()
+    {
+        return $this->hasMany(ProductPdf::class);
+    }
+
     
 }

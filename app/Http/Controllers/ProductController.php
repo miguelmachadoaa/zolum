@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Tax;
+use App\Models\ProductVideo;
+use App\Models\ProductPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -52,59 +54,122 @@ class ProductController extends Controller
         return view('admin.products.create', compact('categories', 'brands', 'taxes'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'sku' => 'nullable|string|unique:products,sku',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'category_id' => 'nullable|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
-            'categories' => 'nullable|array',
-                'categories.*' => 'exists:categories,id',
-            'tax_id' => 'nullable|exists:taxes,id',
-            'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'compare_price' => 'nullable|numeric|min:0',
+        'stock' => 'required|integer|min:0',
+        'sku' => 'nullable|string|unique:products,sku',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'category_id' => 'nullable|exists:categories,id',
+        'brand_id' => 'nullable|exists:brands,id',
+        'categories' => 'nullable|array',
+        'categories.*' => 'exists:categories,id',
+        'tax_id' => 'nullable|exists:taxes,id',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
+        'meta_title' => 'nullable|string|max:255',
+        'meta_description' => 'nullable|string|max:500',
+
+        // Validación de Vídeos
+        'video_url' => 'nullable|url',
+        'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200', // Máx 50MB
+        'youtube_urls' => 'nullable|array',
+        'youtube_urls.*' => 'nullable|url',
+
+        // Validación de PDFs
+        'pdf_file' => 'nullable|file|mimes:pdf|max:10240', // Máx 10MB
+        'pdf_title' => 'nullable|string|max:255',
+        'pdf_titles' => 'nullable|array',
+        'pdf_titles.*' => 'nullable|string|max:255',
+        'pdfs' => 'nullable|array',
+        'pdfs.*' => 'nullable|file|mimes:pdf|max:10240',
+    ]);
+
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('products', 'r2');
+    }
+
+    $validated['is_active'] = $request->has('is_active');
+    $validated['is_featured'] = $request->has('is_featured');
+
+    $product = Product::create($validated);
+
+    if ($request->has('categories')) {
+        $product->categories()->sync($request->categories);
+    }
+
+    // 1. Subir imágenes adicionales de la galería
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $img) {
+            $path = $img->store('products', 'r2');
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image' => $path,
+            ]);
+        }
+    }
+
+    // 2. Procesar Vídeo individual (URL de YouTube / Vimeo)
+    if ($request->filled('video_url')) {
+        $url = $request->video_url;
+        $videoId = $this->parseYoutubeId($url);
+        ProductVideo::create([
+            'product_id' => $product->id,
+            'youtube_url' => $url,
+            'video_id' => $videoId,
         ]);
+    }
 
-        // Manejar la imagen
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'r2');
-        }
-
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_featured'] = $request->has('is_featured');
-
-        $product = Product::create($validated);
-
-        if ($request->has('categories')) {
-            $product->categories()->sync($request->categories);
-        }
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $path = $img->store('products', 'r2');
-
-                ProductImage::create([
+    // Procesar arreglo de Vídeos de YouTube
+    if ($request->has('youtube_urls')) {
+        foreach ($request->youtube_urls as $url) {
+            if ($url && $videoId = $this->parseYoutubeId($url)) {
+                ProductVideo::create([
                     'product_id' => $product->id,
-                    'image' => $path,
+                    'youtube_url' => $url,
+                    'video_id' => $videoId,
                 ]);
             }
         }
-
-        return redirect()->route('products.index')
-            ->with('success', 'Producto creado exitosamente.');
     }
+
+    // 3. Procesar PDF individual
+    if ($request->hasFile('pdf_file') && $request->file('pdf_file')->isValid()) {
+        $pdfFile = $request->file('pdf_file');
+        $path = $pdfFile->store('products/pdfs', 'r2');
+        $title = $request->pdf_title ?? $pdfFile->getClientOriginalName();
+
+        ProductPdf::create([
+            'product_id' => $product->id,
+            'title' => $title,
+            'file_path' => $path,
+        ]);
+    }
+
+    // Procesar arreglo de PDFs
+    if ($request->hasFile('pdfs')) {
+        foreach ($request->file('pdfs') as $index => $pdfFile) {
+            if ($pdfFile->isValid()) {
+                $path = $pdfFile->store('products/pdfs', 'r2');
+                $title = $request->pdf_titles[$index] ?? $pdfFile->getClientOriginalName();
+
+                ProductPdf::create([
+                    'product_id' => $product->id,
+                    'title' => $title,
+                    'file_path' => $path,
+                ]);
+            }
+        }
+    }
+
+    return redirect()->route('products.index')
+        ->with('success', 'Producto creado exitosamente.');
+}
 
     /**
      * Display the specified resource.
@@ -119,6 +184,9 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        // Precargar las relaciones necesarias
+        $product->load(['videos', 'pdfs', 'images']);
+
         $brands = Brand::where('is_active', 1)->get();
         $taxes = Tax::orderBy('name')->get();
         $categories = Category::where('is_active', 1)->get();
@@ -126,61 +194,127 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories', 'brands', 'taxes'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Product $product)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'category_id' => 'nullable|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
-            'tax_id' => 'nullable|exists:taxes,id',
-            'sku' => 'nullable|string|unique:products,sku,'.$product->id,
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
-            'categories' => 'nullable|array',
-            'categories.*' => 'exists:categories,id',
-        ]);
+{
 
-        // Manejar la imagen
-        if ($request->hasFile('image')) {
-            // Eliminar imagen anterior
-            if ($product->image) {
-                Storage::disk('r2')->delete($product->image);
-            }
-            $validated['image'] = $request->file('image')->store('products', 'r2');
+    #dd($request->all());
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'compare_price' => 'nullable|numeric|min:0',
+        'stock' => 'required|integer|min:0',
+        'category_id' => 'nullable|exists:categories,id',
+        'brand_id' => 'nullable|exists:brands,id',
+        'tax_id' => 'nullable|exists:taxes,id',
+        'sku' => 'nullable|string|unique:products,sku,'.$product->id,
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
+        'meta_title' => 'nullable|string|max:255',
+        'meta_description' => 'nullable|string|max:500',
+        'categories' => 'nullable|array',
+        'categories.*' => 'exists:categories,id',
+
+        // Validación de Vídeos y PDFs
+        'video_url' => 'nullable|url',
+        'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+        'youtube_urls' => 'nullable|array',
+        'youtube_urls.*' => 'nullable|url',
+        'pdf_file' => 'nullable|file|mimes:pdf|max:10240',
+        'pdf_title' => 'nullable|string|max:255',
+        'pdf_titles' => 'nullable|array',
+        'pdf_titles.*' => 'nullable|string|max:255',
+        'pdfs' => 'nullable|array',
+        'pdfs.*' => 'nullable|file|mimes:pdf|max:10240',
+    ]);
+
+    if ($request->hasFile('image')) {
+        if ($product->image) {
+            Storage::disk('r2')->delete($product->image);
         }
+        $validated['image'] = $request->file('image')->store('products', 'r2');
+    }
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_featured'] = $request->has('is_featured');
+    $validated['is_active'] = $request->has('is_active');
+    $validated['is_featured'] = $request->has('is_featured');
 
-        $product->update($validated);
+    $product->update($validated);
+    $product->categories()->sync($request->categories ?? []);
 
-        $product->categories()->sync($request->categories ?? []);
+    // 1. Agregar imágenes a la galería
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $img) {
+            $path = $img->store('products', 'r2');
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image' => $path,
+            ]);
+        }
+    }
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $path = $img->store('products', 'r2');
+    // 2. Agregar Vídeo individual (YouTube)
+    if ($request->filled('video_url')) {
+        $url = $request->video_url;
+        $videoId = $this->parseYoutubeId($url);
 
-                ProductImage::create([
+        #dd($videoId);
+        ProductVideo::create([
+            'product_id' => $product->id,
+            'youtube_url' => $url,
+            'video_id' => $videoId,
+        ]);
+    }
+
+    // Agregar vídeos desde el arreglo
+    if ($request->has('youtube_urls')) {
+        foreach ($request->youtube_urls as $url) {
+            if ($url && $videoId = $this->parseYoutubeId($url)) {
+                ProductVideo::create([
                     'product_id' => $product->id,
-                    'image' => $path,
+                    'youtube_url' => $url,
+                    'video_id' => $videoId,
                 ]);
             }
         }
-
-        return redirect()->route('products.index')
-            ->with('success', 'Producto actualizado exitosamente.');
     }
+
+    // 3. Agregar PDF individual
+    if ($request->hasFile('pdf_file') && $request->file('pdf_file')->isValid()) {
+        $pdfFile = $request->file('pdf_file');
+        $path = $pdfFile->store('products/pdfs', 'r2');
+        $title = $request->pdf_title ?? $pdfFile->getClientOriginalName();
+
+        #dd($title, $path);
+
+        ProductPdf::create([
+            'product_id' => $product->id,
+            'title' => $title,
+            'file_path' => $path,
+        ]);
+    }
+
+    // Agregar PDFs desde el arreglo
+    if ($request->hasFile('pdfs')) {
+        foreach ($request->file('pdfs') as $index => $pdfFile) {
+            if ($pdfFile->isValid()) {
+                $path = $pdfFile->store('products/pdfs', 'r2');
+                $title = $request->pdf_titles[$index] ?? $pdfFile->getClientOriginalName();
+
+                ProductPdf::create([
+                    'product_id' => $product->id,
+                    'title' => $title,
+                    'file_path' => $path,
+                ]);
+            }
+        }
+    }
+
+    return redirect()->route('products.index')
+        ->with('success', 'Producto actualizado exitosamente.');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -344,7 +478,10 @@ class ProductController extends Controller
 
     public function detail($slug)
     {
-        $product = Product::with(['brand', 'category'])->where('slug', $slug)->firstOrFail();
+        // Carga ansiosa (Eager Loading) de imágenes, vídeos y pdfs
+        $product = Product::with(['brand', 'category', 'images', 'videos', 'pdfs'])
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         $related = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
@@ -368,5 +505,34 @@ class ProductController extends Controller
         $image->delete();
 
         return response()->json(['success' => true]);
+    }
+
+
+    /**
+     * Eliminar vídeo vía AJAX
+     */
+    public function deleteVideo(ProductVideo $video)
+    {
+        $video->delete();
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Eliminar PDF vía AJAX
+     */
+    public function deletePdf(ProductPdf $pdf)
+    {
+        Storage::disk('r2')->delete($pdf->file_path);
+        $pdf->delete();
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Extrae el ID de un enlace de YouTube estándar o corto.
+     */
+    private function parseYoutubeId(string  $url)
+    {
+        preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match);
+        return $match[1] ?? null;
     }
 }

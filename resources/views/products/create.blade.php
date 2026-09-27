@@ -22,7 +22,7 @@
                             <div class="md:col-span-2">
                                 <label for="name" class="block text-sm font-medium text-gray-700">Nombre del Producto *</label>
                                 <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('name') border-red-500 @enderror">
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('name') border-red-500 @enderror">
                                 @error('name')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -32,7 +32,7 @@
                             <div>
                                 <label for="sku" class="block text-sm font-medium text-gray-700">SKU</label>
                                 <input type="text" name="sku" id="sku" value="{{ old('sku') }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('sku') border-red-500 @enderror">
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('sku') border-red-500 @enderror">
                                 @error('sku')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -42,10 +42,57 @@
                             <div>
                                 <label for="stock" class="block text-sm font-medium text-gray-700">Stock *</label>
                                 <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" min="0" required
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('stock') border-red-500 @enderror">
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('stock') border-red-500 @enderror">
                                 @error('stock')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                            </div>
+
+                            <!-- Marca -->
+                            <div>
+                                <label for="brand_id" class="block text-sm font-medium text-gray-700">Marca</label>
+                                <select name="brand_id" id="brand_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('brand_id') border-red-500 @enderror">
+                                    <option value="">Seleccione una marca</option>
+                                    @foreach($brands as $brand)
+                                        <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
+                                            {{ $brand->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('brand_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Impuesto -->
+                            <div>
+                                <label for="tax_id" class="block text-sm font-medium text-gray-700">Impuesto</label>
+                                <select name="tax_id" id="tax_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('tax_id') border-red-500 @enderror">
+                                    @foreach($taxes as $tax)
+                                        <option value="{{ $tax->id }}" {{ old('tax_id', 1) == $tax->id ? 'selected' : '' }}>
+                                            {{ $tax->name }} ({{ number_format($tax->rate, 2) }}%)
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('tax_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Categorías -->
+                            <div class="md:col-span-2">
+                                <label for="categories" class="block text-sm font-medium text-gray-700">Categorías</label>
+                                <select name="categories[]" id="categories" multiple 
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ (is_array(old('categories')) && in_array($category->id, old('categories'))) ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Mantén presionado Ctrl (o Cmd) para seleccionar varias.</p>
                             </div>
 
                             <!-- Precio -->
@@ -56,7 +103,7 @@
                                         <span class="text-gray-500 sm:text-sm">$</span>
                                     </div>
                                     <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0" required
-                                           class="pl-7 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @error('price') border-red-500 @enderror">
+                                        class="pl-7 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @error('price') border-red-500 @enderror">
                                 </div>
                                 @error('price')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -71,9 +118,9 @@
                                         <span class="text-gray-500 sm:text-sm">$</span>
                                     </div>
                                     <input type="number" name="compare_price" id="compare_price" value="{{ old('compare_price') }}" step="0.01" min="0"
-                                           class="pl-7 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @error('compare_price') border-red-500 @enderror">
+                                        class="pl-7 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @error('compare_price') border-red-500 @enderror">
                                 </div>
-                                <p class="mt-1 text-sm text-gray-500">Para mostrar descuentos</p>
+                                <p class="mt-1 text-xs text-gray-500">Para mostrar precio original con descuento</p>
                                 @error('compare_price')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -83,73 +130,82 @@
                             <div class="md:col-span-2">
                                 <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
                                 <textarea name="description" id="description" rows="4"
-                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
                                 @error('description')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                            <!-- Imagen -->
+                            <!-- Imagen Principal -->
                             <div class="md:col-span-2">
-                                <label for="image" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                                <label for="image" class="block text-sm font-medium text-gray-700">Imagen Principal del Producto</label>
                                 <input type="file" name="image" id="image" accept="image/*"
-                                       class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 @error('image') border-red-500 @enderror">
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 @error('image') border-red-500 @enderror">
                                 @error('image')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                            <div class="md:col-span-2 my-2">
-                                <hr class="border-gray-200">
-                                <p class="text-sm font-semibold text-gray-500 mt-2">Configuración SEO (Opcional)</p>
-                            </div>
-
-                            <!-- NUEVO: Meta Title -->
+                            <!-- Imágenes Adicionales (Galería) -->
                             <div class="md:col-span-2">
-                                <label for="meta_title" class="block text-sm font-medium text-gray-700">Meta Title</label>
-                                <input type="text" name="meta_title" id="meta_title" value="{{ old('meta_title') }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('meta_title') border-red-500 @enderror">
-                                @error('meta_title')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- NUEVO: Meta Description -->
-                            <div class="md:col-span-2">
-                                <label for="meta_description" class="block text-sm font-medium text-gray-700">Meta Description</label>
-                                <textarea name="meta_description" id="meta_description" rows="2"
-                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('meta_description') border-red-500 @enderror">{{ old('meta_description') }}</textarea>
-                                @error('meta_description')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                <label for="images" class="block text-sm font-medium text-gray-700">Imágenes Adicionales (Galería)</label>
+                                <input type="file" name="images[]" id="images" accept="image/*" multiple
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                <p class="mt-1 text-xs text-gray-500">Puedes seleccionar varias imágenes para la galería del producto.</p>
                             </div>
 
                             <!-- Checkboxes -->
-                            <div class="md:col-span-2 space-y-4">
+                            <div class="md:col-span-2 space-y-4 pt-2">
                                 <div class="flex items-center">
                                     <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <label for="is_active" class="ml-2 block text-sm text-gray-900">
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="is_active" class="ml-2 block text-sm font-medium text-gray-900">
                                         Producto Activo
                                     </label>
                                 </div>
 
                                 <div class="flex items-center">
                                     <input type="checkbox" name="is_featured" id="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}
-                                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <label for="is_featured" class="ml-2 block text-sm text-gray-900">
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="is_featured" class="ml-2 block text-sm font-medium text-gray-900">
                                         Producto Destacado
                                     </label>
+                                </div>
+                            </div>
+                            
+                            <!-- SEO Settings -->
+                            <div class="md:col-span-2 border-t pt-6 mt-4">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Configuración SEO</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="md:col-span-2">
+                                        <label for="meta_title" class="block text-sm font-medium text-gray-700">Meta Title</label>
+                                        <input type="text" name="meta_title" id="meta_title" value="{{ old('meta_title') }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('meta_title') border-red-500 @enderror"
+                                            placeholder="Título para buscadores (opcional)">
+                                        @error('meta_title')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label for="meta_description" class="block text-sm font-medium text-gray-700">Meta Description</label>
+                                        <textarea name="meta_description" id="meta_description" rows="3"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('meta_description') border-red-500 @enderror"
+                                            placeholder="Descripción para buscadores (opcional)">{{ old('meta_description') }}</textarea>
+                                        @error('meta_description')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Botones -->
-                        <div class="mt-6 flex items-center justify-end gap-x-4">
-                            <a href="{{ route('products.index') }}" class="text-sm font-semibold leading-6 text-gray-900">
+                        <div class="mt-6 flex items-center justify-end gap-x-4 border-t pt-6">
+                            <a href="{{ route('products.index') }}" class="text-sm font-semibold leading-6 text-gray-700 hover:text-gray-900">
                                 Cancelar
                             </a>
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded shadow-sm">
                                 Crear Producto
                             </button>
                         </div>
@@ -158,6 +214,4 @@
             </div>
         </div>
     </div>
-
-   
 </x-app-layout>

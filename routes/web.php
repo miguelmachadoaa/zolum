@@ -187,6 +187,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/products/{product}/inline-update', [ProductController::class, 'inlineUpdate'])
         ->name('products.inline-update');
 
+
+    Route::delete('/products/videos/{video}', [ProductController::class, 'deleteVideo'])->name('products.videos.destroy');
+    Route::delete('/products/pdfs/{pdf}', [ProductController::class, 'deletePdf'])->name('products.pdfs.destroy');
+
+
     // Rutas de Reseñas (Admin)
     Route::get('/reviews', [ReviewAdminController::class, 'index'])->name('admin.reviews.index');
     Route::get('/reviews/{review}', [ReviewAdminController::class, 'show'])->name('admin.reviews.show');

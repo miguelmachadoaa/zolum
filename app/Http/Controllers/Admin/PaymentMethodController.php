@@ -120,11 +120,11 @@ class PaymentMethodController extends Controller
     public function destroy(PaymentMethod $paymentMethod)
     {
         if ($paymentMethod->logo) {
-            Storage::disk('public')->delete($paymentMethod->logo);
+            Storage::disk('r2')->delete($paymentMethod->logo);
         }
 
         if ($paymentMethod->qr_code) {
-            Storage::disk('public')->delete($paymentMethod->qr_code);
+            Storage::disk('r2')->delete($paymentMethod->qr_code);
         }
 
         $paymentMethod->delete();

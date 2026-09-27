@@ -14,7 +14,7 @@
                         <a href="{{ route('shop.byCategory', $subcategory->slug) }}" class="cat-card">
                             <div class="cat-card__img">
                                 @if($subcategory->image)
-                                    <img src="{{ asset('storage/' . $subcategory->image) }}" alt="{{ $subcategory->name }}">
+                                    <img src="{{ Storage::disk('r2')->url($subcategory->image) }}" alt="{{ $subcategory->name }}">
                                 @else
                                     {{-- Icono/Emoji industrial de respaldo para subcategorías --}}
                                     <div class="cat-card__placeholder">🛠️</div>

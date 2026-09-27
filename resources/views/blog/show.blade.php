@@ -29,7 +29,7 @@
         {{-- Imagen Principal --}}
         @if($post->image)
             <div style="width: 100%; overflow: hidden; border: 1px solid var(--border-gray); border-radius: 4px; margin-bottom: 2.5rem; background-color: #FAFAFA; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-                <img src="{{ asset('storage/' . $post->image) }}" style="width: 100%; height: auto; display: block;">
+                <img src="{{ $post->image ? Storage::disk('r2')->url($post->image) : asset('images/no-image.png') }}" style="width: 100%; height: auto; display: block;">
             </div>
         @endif
 

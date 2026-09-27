@@ -82,7 +82,7 @@
                         <a href="{{ route('shop.byCategory', $category->slug) }}" class="cat-card" style="margin: 0; width: 100%;">
                             <div class="cat-card__img">
                                 @if($category->image)
-                                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}">
+                                    <img src="{{ Storage::disk('r2')->url($category->image) }}" alt="{{ $category->name }}">
                                 @else
                                     <div class="cat-card__placeholder">🔮</div>
                                 @endif

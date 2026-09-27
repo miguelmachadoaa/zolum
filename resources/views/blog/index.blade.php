@@ -26,7 +26,7 @@
                     {{-- Imagen del Post --}}
                     @if($post->image)
                         <div style="height: 200px; width: 100%; overflow: hidden; background-color: #FAFAFA; border-bottom: 1px solid var(--border-gray);">
-                            <img src="{{ asset('storage/' . $post->image) }}" 
+                            <img src="{{ $post->image ? Storage::disk('r2')->url($post->image) : asset('images/no-image.png') }}"
                                  style="height: 100%; width: 100%; object-fit: cover; transition: transform 0.3s;"
                                  onmouseover="this.style.transform='scale(1.02)'"
                                  onmouseout="this.style.transform='scale(1)'">

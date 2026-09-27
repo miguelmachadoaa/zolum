@@ -297,4 +297,26 @@ class CheckoutController extends Controller
     }
 
     // ... (demás métodos como downloadInvoice, guestViewOrder, etc. se mantienen igual) ...
+
+    public function downloadInvoice($orderId)
+    {
+        $order = Order::with('items.tax')->findOrFail($orderId);
+
+        // Permitir descarga si es admin, el dueño directo logueado, o si posee una firma de URL válida (invitados)
+        if (auth()->check() && (auth()->user()->role === 'admin' || $order->user_id === auth()->id())) {
+            // Autorizado por sesión
+        } else {
+            if (!request()->hasValidSignature()) {
+                abort(403, 'No tienes permiso para ver esta factura.');
+            }
+        }
+
+        $settings = Setting::first();
+        $pdf = Pdf::loadView('pdf.invoice', compact('order', 'settings'));
+
+        return $pdf->download('Factura_' . $order->id . '.pdf');
+    }
+
+    
+
 }

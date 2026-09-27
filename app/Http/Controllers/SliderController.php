@@ -63,23 +63,12 @@ class SliderController extends Controller
 
         // Manejar la imagen
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('sliders', 'public');
+            $validated['image'] = $request->file('image')->store('sliders', 'r2');
         }
 
         $validated['is_active'] = $request->has('is_active');
 
         Slider::create($validated);
-
-        $path = $validated['image'];
-
-        $from = storage_path('app/public/' . $path);
-                $to = public_path('storage/' . $path);
-
-                if (!file_exists(dirname($to))) {
-                    mkdir(dirname($to), 0775, true);
-                }
-
-                copy($from, $to);    
 
         return redirect()->route('sliders.index')
             ->with('success', 'Slider creado exitosamente.');
@@ -123,20 +112,9 @@ class SliderController extends Controller
         if ($request->hasFile('image')) {
             // Eliminar imagen anterior
             if ($slider->image) {
-                Storage::disk('public')->delete($slider->image);
+                Storage::disk('r2')->delete($slider->image);
             }
-            $validated['image'] = $request->file('image')->store('sliders', 'public');
-
-            $path = $validated['image'];
-
-             $from = storage_path('app/public/' . $path);
-                $to = public_path('storage/' . $path);
-
-                if (!file_exists(dirname($to))) {
-                    mkdir(dirname($to), 0775, true);
-                }
-
-                copy($from, $to);
+            $validated['image'] = $request->file('image')->store('sliders', 'r2');
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -158,7 +136,7 @@ class SliderController extends Controller
     {
         // Eliminar imagen si existe
         if ($slider->image) {
-            Storage::disk('public')->delete($slider->image);
+            Storage::disk('r2')->delete($slider->image);
         }
 
         $slider->delete();

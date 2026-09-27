@@ -811,7 +811,7 @@
                                     <div class="zc-prod-cell">
                                         <div class="zc-prod-img">
                                             @if(isset($item['image']))
-                                                <img src="{{ asset('storage/' . $item['image']) }}"
+                                                <img src="{{ Storage::disk('r2')->url( $item['image']) }}"
                                                      alt="{{ $item['name'] }}">
                                             @else
                                                 <span class="zc-prod-img--placeholder">IMG</span>

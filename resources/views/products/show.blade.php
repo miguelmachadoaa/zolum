@@ -1,7 +1,7 @@
 <x-front-layout>
     <section class="max-w-7xl mx-auto py-12 px-6 grid md:grid-cols-2 gap-10">
         <div>
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+            <img src="{{ $product->image ? Storage::disk('r2')->url($product->image) : asset('images/no-image.png') }}" alt="{{ $product->name }}"
                  class="w-full rounded-lg shadow-lg object-cover">
         </div>
 

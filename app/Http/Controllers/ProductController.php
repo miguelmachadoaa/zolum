@@ -67,6 +67,7 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'categories' => 'nullable|array',
                 'categories.*' => 'exists:categories,id',
             'tax_id' => 'nullable|exists:taxes,id',
@@ -78,7 +79,7 @@ class ProductController extends Controller
 
         // Manejar la imagen
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $request->file('image')->store('products', 'r2');
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -86,38 +87,18 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
 
-        $path = $validated['image'] ?? null;    
-
-        $from = storage_path('app/public/' . $path);
-                $to = public_path('storage/' . $path);
-
-                if (!file_exists(dirname($to))) {
-                    mkdir(dirname($to), 0775, true);
-                }
-
-                copy($from, $to);    
-
         if ($request->has('categories')) {
             $product->categories()->sync($request->categories);
         }
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
-                $path = $img->store('products', 'public');
+                $path = $img->store('products', 'r2');
 
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image' => $path,
                 ]);
-
-                $from = storage_path('app/public/' . $path);
-                $to = public_path('storage/' . $path);
-
-                if (!file_exists(dirname($to))) {
-                    mkdir(dirname($to), 0775, true);
-                }
-
-                copy($from, $to);    
             }
         }
 
@@ -157,6 +138,7 @@ class ProductController extends Controller
             'compare_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'tax_id' => 'nullable|exists:taxes,id',
             'sku' => 'nullable|string|unique:products,sku,'.$product->id,
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -173,9 +155,9 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             // Eliminar imagen anterior
             if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                Storage::disk('r2')->delete($product->image);
             }
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $request->file('image')->store('products', 'r2');
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -183,38 +165,16 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        $path = $validated['image'] ?? $product->image;
-
-        $from = storage_path('app/public/' . $path);
-        $to = public_path('storage/' . $path);
-
-        if (!file_exists(dirname($to))) {
-            mkdir(dirname($to), 0775, true);
-        }
-
-        copy($from, $to);    
-
         $product->categories()->sync($request->categories ?? []);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
-                $path = $img->store('products', 'public');
+                $path = $img->store('products', 'r2');
 
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image' => $path,
                 ]);
-
-                $from = storage_path('app/public/' . $path);
-                $to = public_path('storage/' . $path);
-
-                if (!file_exists(dirname($to))) {
-                    mkdir(dirname($to), 0775, true);
-                }
-
-                copy($from, $to);    
-
-
             }
         }
 
@@ -229,7 +189,7 @@ class ProductController extends Controller
     {
         // Eliminar imagen si existe
         if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+            Storage::disk('r2')->delete($product->image);
         }
 
         $product->delete();
@@ -248,12 +208,12 @@ class ProductController extends Controller
 
         // Si es imagen
         if ($request->field === 'image' && $request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
+            $path = $request->file('image')->store('products', 'r2');
             $product->update(['image' => $path]);
 
             return response()->json([
                 'success' => true,
-                'image_url' => asset('storage/'.$path),
+                'image_url' => Storage::disk('r2')->url($path),
             ]);
         }
 
@@ -402,7 +362,7 @@ class ProductController extends Controller
     public function deleteImage(ProductImage $image)
     {
         // Eliminar del almacenamiento
-        Storage::disk('public')->delete($image->image);
+        Storage::disk('r2')->delete($image->image);
 
         // Eliminar de la base de datos
         $image->delete();

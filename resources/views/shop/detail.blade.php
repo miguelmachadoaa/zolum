@@ -20,7 +20,7 @@
                 @mousemove="x = ($event.offsetX / $event.target.offsetWidth) * 100; y = ($event.offsetY / $event.target.offsetHeight) * 100"
                 @mouseenter="zoom = true" @mouseleave="zoom = false">
 
-                <img id="main-image" src="{{ asset('storage/' . $product->image) }}"
+                <img id="main-image" src="{{ $product->image ? Storage::disk('r2')->url($product->image) : asset('images/no-image.png') }}"
                     class="ap-gallery__main"
                     :style="zoom ? `transform: scale(2); transform-origin: ${x}% ${y}%;` : ''"
                     alt="{{ $product->name }}">
@@ -31,14 +31,14 @@
                     <div class="swiper thumbSwiper">
                         <div class="swiper-wrapper">
                             <div class="swiper-slide">
-                                <div class="thumb-item active" onclick="changeMainImage('{{ asset('storage/' . $product->image) }}', this)">
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="Principal">
+                                <div class="thumb-item active" onclick="changeMainImage('{{ $product->image ? Storage::disk('r2')->url($product->image) : asset('images/no-image.png') }}', this)">
+                                    <img src="{{ $product->image ? Storage::disk('r2')->url($product->image) : asset('images/no-image.png') }}" alt="Principal">
                                 </div>
                             </div>
                             @foreach($product->images as $additionalImage)
                                 <div class="swiper-slide">
-                                    <div class="thumb-item" onclick="changeMainImage('{{ asset('storage/' . $additionalImage) }}', this)">
-                                        <img src="{{ asset('storage/' . $additionalImage) }}" alt="Adicional">
+                                    <div class="thumb-item" onclick="changeMainImage('{{ Storage::disk('r2')->url($additionalImage->image) }}', this)">
+                                        <img src="{{ Storage::disk('r2')->url($additionalImage->image) }}" alt="Adicional">
                                     </div>
                                 </div>
                             @endforeach

@@ -49,12 +49,12 @@ class ServiceAdminController extends Controller
 
         // Handle hero image upload
         if ($request->hasFile('hero_image')) {
-            $validated['hero_image'] = $request->file('hero_image')->store('services/hero', 'public');
+            $validated['hero_image'] = $request->file('hero_image')->store('services/hero', 'r2');
         }
 
         // Handle general image upload
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['image'] = $request->file('image')->store('services', 'r2');
         }
 
         // Filter empty features
@@ -107,17 +107,17 @@ class ServiceAdminController extends Controller
         // Handle hero image upload
         if ($request->hasFile('hero_image')) {
             if ($service->hero_image) {
-                Storage::disk('public')->delete($service->hero_image);
+                Storage::disk('r2')->delete($service->hero_image);
             }
-            $validated['hero_image'] = $request->file('hero_image')->store('services/hero', 'public');
+            $validated['hero_image'] = $request->file('hero_image')->store('services/hero', 'r2');
         }
 
         // Handle general image upload
         if ($request->hasFile('image')) {
             if ($service->image) {
-                Storage::disk('public')->delete($service->image);
+                Storage::disk('r2')->delete($service->image);
             }
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['image'] = $request->file('image')->store('services', 'r2');
         }
 
         // Filter empty features
@@ -135,10 +135,10 @@ class ServiceAdminController extends Controller
     {
         // Delete images
         if ($service->hero_image) {
-            Storage::disk('public')->delete($service->hero_image);
+            Storage::disk('r2')->delete($service->hero_image);
         }
         if ($service->image) {
-            Storage::disk('public')->delete($service->image);
+            Storage::disk('r2')->delete($service->image);
         }
 
         $service->delete();

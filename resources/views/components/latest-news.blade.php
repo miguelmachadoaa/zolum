@@ -26,7 +26,7 @@
                     {{-- Imagen Destacada limpia --}}
                     @if($post->image)
                         <div class="zolum-card-image-wrapper">
-                            <img src="{{ asset('storage/' . $post->image) }}" 
+                            <img src="{{ $post->image ? Storage::disk('r2')->url($post->image) : asset('images/no-image.png') }}"
                                  alt="{{ $post->title }}" 
                                  class="zolum-card-image">
                         </div>

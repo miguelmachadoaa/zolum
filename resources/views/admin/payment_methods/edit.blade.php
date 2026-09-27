@@ -55,7 +55,7 @@
                             <label class="block font-semibold mb-1 text-sm">Logo / Icono</label>
                             @if($paymentMethod->logo)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $paymentMethod->logo) }}" class="h-16 w-16 object-contain border p-1 rounded bg-white">
+                                    <img src="{{ Storage::disk('r2')->url($paymentMethod->logo) }}" class="h-16 w-16 object-contain border p-1 rounded bg-white">
                                 </div>
                             @endif
                             <input type="file" name="logo" accept="image/*" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
@@ -65,7 +65,7 @@
                             <label class="block font-semibold mb-1 text-sm">Imagen QR de Pago (Opcional)</label>
                             @if($paymentMethod->qr_code)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $paymentMethod->qr_code) }}" class="h-16 w-16 object-cover border p-1 rounded bg-white">
+                                    <img src="{{ Storage::disk('r2')->url($paymentMethod->qr_code) }}" class="h-16 w-16 object-cover border p-1 rounded bg-white">
                                 </div>
                             @endif
                             <input type="file" name="qr_code" accept="image/*" class="w-full text-sm border-gray-300 rounded-md shadow-sm">

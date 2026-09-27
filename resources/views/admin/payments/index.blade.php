@@ -55,7 +55,7 @@
                                         <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($report->payment_date)->format('d/m/Y') }}</td>
                                         <td class="px-6 py-4">
                                             @if($report->proof_image)
-                                                <a href="{{ asset('storage/' . $report->proof_image) }}" target="_blank" class="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1">
+                                                <a href="{{ $report->proof_image ? Storage::disk('r2')->url($report->proof_image) : asset('images/no-image.png') }}" target="_blank" class="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1">
                                                     Ver captura ↗
                                                 </a>
                                             @else

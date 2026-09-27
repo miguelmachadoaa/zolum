@@ -892,7 +892,7 @@
                                     
                                     @if($method->logo)
                                         {{-- Si hay logo en el CRUD, lo renderizamos con la clase optimizada --}}
-                                        <img src="{{ asset('storage/' . $method->logo) }}" 
+                                        <img src="{{ $method->logo ? Storage::disk('r2')->url($method->logo) : asset('images/no-image.png') }}"
                                             class="zco-pay-img" 
                                             alt="{{ $method->name }}">
                                     @else

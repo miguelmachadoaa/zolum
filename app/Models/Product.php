@@ -47,6 +47,7 @@ class Product extends Model
         'is_active',
         'is_featured',
         'category_id',
+        'brand_id',
         'tax_id',
         'meta_title',
         'meta_description',

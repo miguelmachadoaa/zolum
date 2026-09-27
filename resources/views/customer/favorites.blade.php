@@ -39,7 +39,7 @@
                             <a href="{{ route('product.detail', $product->slug) }}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%;">
                                 {{-- Contenedor de Imagen --}}
                                 <div style="width: 100%; height: 180px; overflow: hidden; background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 4px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
-                                    <img src="{{ $product->image ? asset('storage/' . $product->image) : asset('images/no-image.png') }}" 
+                                    <img src="{{ $product->image ? Storage::disk('r2')->url($product->image) : asset('images/no-image.png') }}" 
                                          style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
                                 </div>
                                 

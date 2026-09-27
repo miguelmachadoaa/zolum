@@ -63,7 +63,7 @@
                                         <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @if($method->logo)
-                                                    <img src="{{ asset('storage/' . $method->logo) }}" class="h-12 w-12 object-contain rounded border shadow-sm">
+                                                    <img src="{{ $method->logo ? Storage::disk('r2')->url($method->logo) : asset('images/no-image.png') }}" class="h-12 w-12 object-contain rounded border shadow-sm">
                                                 @else
                                                     <div class="h-12 w-12 bg-gray-100 rounded flex items-center justify-center border shadow-sm text-gray-400">💵</div>
                                                 @endif

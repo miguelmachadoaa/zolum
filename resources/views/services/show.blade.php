@@ -6,7 +6,7 @@
     <div class="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white py-24 overflow-hidden">
         @if($service->hero_image)
             <div class="absolute inset-0">
-                <img src="{{ asset('storage/' . $service->hero_image) }}" 
+                <img src="{{ $service->hero_image ? Storage::disk('r2')->url($service->hero_image) : asset('images/no-image.png') }}"
                     alt="{{ $service->name }}"
                     class="w-full h-full object-cover opacity-20">
                 <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/80 to-purple-900/80"></div>
